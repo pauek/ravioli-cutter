@@ -1,73 +1,56 @@
+N = 14;
+side = 10;
+height = 30;
+thickness = 0.4;
 
-module pyramid(side, height) {
-  linear_extrude(height = height, scale = 0)
-    square(size=[side, side], center=true);
-}
-
-module cubramid(side, height) {
-  rotate([0, 0, 135])
-    multmatrix(m = [
+A = [
       [1, 0, 0, 0],
-      [0, 1, 0.5*side*sqrt(2)/height, 0],
+      [0, 1, -(side/2)/height, 0],
       [0, 0, 1, 0],
       [0, 0, 0, 1]
-    ]) {  
-      translate([0, 0, height/2])
-        rotate([0, 0, 45])
-          cube([side, side, height], center = true);
-    }
+    ];
+
+module prisma() {
+  translate([0, 0, height/2])
+    rotate([0, 0, 45])
+      cube([side/2*sqrt(2), side/2*sqrt(2), height], center = true);
 }
 
-module cubramid_line(N, side, height) {
-  X = side*sqrt(2);
+module prisma_line(N) {
   for (i = [1:N]) {
-    translate([(i - 0.5)*X, X/2, -0.1])
-      rotate([0, 0, 45])
-        cubramid(side, height + 1);
+    translate([(i-.5) * side, side/2, 0])
+      prisma();
   }
 }
 
-module cube_line(N, side, height) {
-  X = side*sqrt(2);
-  for (i = [1:N]) {
-    translate([(i - 0.5)*X, X/2, height/2 - 0.1])
-      rotate([0, 0, 45])
-        cube([side, side, height + 1], center = true);
-  }
-}
-
-module cutter_band(N, side, height, thickness) {
-  X = side*sqrt(2);
+module base() {
+  translate([0, 0, 0])
   difference() {
-    union() {
-      cube([side*N, thickness + side/2, height]);
-      multmatrix(m = [
-        [1, 0, 0, 0],
-        [0, 1, -side/height*.5, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0,  1]
-      ]) {
-        cube([side*N, thickness + side/2, height]);
-      }
-    }
-    
-    translate([0, thickness, 0])
-    cube_line(N, X/2, height);
-    translate([-side/2, -side/2, 0])
-      cubramid_line(N+1, X/2, height);
+    translate([0, -thickness, 0])
+      multmatrix(m = A) cube([N*side, side + thickness, height-1]);
+    translate([0, side/2, 0])
+      cube([N*side, side/2, height-1]);
   }
 }
 
-module cutter_full(N, side, height, thickness) {
+module cutter_side() {
+  translate([-N*side/2, -N*side/2, 0])
+  difference() {
+    base();
+    translate([-side/2, -side/2 - thickness, 0])
+      multmatrix(m = A)
+        prisma_line(N+1);
+    prisma_line(N+1);
+  }
+}
+
+module cutter() {
   union() {
     for (angle = [0, 90, 180, 270]) {
       rotate([0, 0, angle])
-        translate([-N/2*side, -N/2*side, 0])
-          cutter_band(N, side, height, thickness);
+        cutter_side();
     }
   }
 }
 
-
-cutter_band(N = 12, side = 10, height = 20, thickness = 1);
-// cubramid(10, 20);
+cutter();
