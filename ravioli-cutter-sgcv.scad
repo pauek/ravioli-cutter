@@ -50,7 +50,18 @@ module cutter() {
       rotate([0, 0, angle])
         cutter_side();
     }
+    difference() {
+      translate([0, 0, height-1]) {
+        minkowski() {
+          cube([(N)*side, (N)*side, 1], center = true);
+          cylinder(h = 1, r = side);
+        }
+      }
+      cube([(N-2)*side, (N-2)*side, height*10], center = true);
+    }
   }
 }
 
-cutter();
+translate([0, 0, height])
+  rotate([180, 0, 0])
+    cutter();
