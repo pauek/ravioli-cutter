@@ -1,4 +1,4 @@
-N = 14;
+N = 12;
 side = 10;
 height = 30;
 thickness = 0.4;
