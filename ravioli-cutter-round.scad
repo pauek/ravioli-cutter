@@ -113,7 +113,8 @@ module reinforcement() {
   translate([0, 0, HEIGHT - 0.1])
     difference() {
       cylinder(h = 2, r = r + width, $fn = 120);
-      cylinder(h = 2, r = r - width, $fn = 120);
+      translate([0, 0, -0.5])
+        cylinder(h = 3, r = r - width, $fn = 120);
     }
 }
 
@@ -124,5 +125,6 @@ module cutter() {
       reinforcement();
     }
 }
+
 
 cutter();
